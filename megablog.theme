@@ -1,0 +1,137 @@
+<?php
+
+
+/**
+ * @file
+ * Functions to support theming in the Mega Blog theme.
+ */
+
+
+use Drupal\Core\Template\Attribute;
+use Drupal\Component\Utility\String;
+        /**
+         * Returns HTML for a menu link and submenu.
+         *
+         * @param $variables
+         *   An associative array containing:
+         *   - element: Structured array data for a menu link.
+         *
+         * @ingroup themeable
+         */
+        function megablog_menu_link(array $variables) {
+          $element = $variables['element'];
+          $sub_menu = '';
+
+          if ($element['#below']) {
+            $sub_menu = drupal_render($element['#below']);
+          }
+          $element['#localized_options']['set_active_class'] = TRUE;
+          $output = l($element['#title'], $element['#href'], $element['#localized_options']);
+          return '<li' . new Attribute($element['#attributes']) . '>' . $output . $sub_menu . "</li>\n";
+        }
+
+
+
+        function megablog_menu_link__main(&$variables) {
+        $element = $variables['element'];
+        $sub_menu = '';
+        if ($element['#original_link']['depth'] == 1) {
+            $element['#attributes']['data-menu-parent'] = 'sf-menu';
+            }else{
+              $element['#attributes']['data-menu-parent'] = '';
+            }
+        if ($element['#below']) {
+        $sub_menu = drupal_render($element['#below']);
+        }
+         
+        $output = la($element['#title'], $element['#href'], $element['#localized_options']);
+        return '<li' . new Attribute($element['#attributes']) . '>' . $output . $sub_menu . "</li>\n";
+        }
+         
+        function megablog_preprocess_menu_tree(&$variables) {
+        $tree = new DOMDocument();
+        @$tree->loadHTML($variables['tree']);
+        $links = $tree->getElementsByTagname('li');
+        $parent = '';
+         
+        foreach ($links as $link) {
+        $parent = $link->getAttribute('data-menu-parent');
+        break;
+        }
+         
+        $variables['menu_parent'] = $parent;
+        }
+         
+
+
+/**
+ * Override theme_menu_tree().
+ */
+function megablog_menu_tree__main($variables) {
+
+   return '<ul class="' . $variables['menu_parent'] . '">' . $variables['tree'] . '</ul>';
+}
+
+// Modulj dlja linkov s spanom
+function la($text, $path, array $options = array()) {
+  // Start building a structured representation of our link to be altered later.
+  $variables = array(
+    'text' => is_array($text) ? drupal_render($text) : $text,
+    'path' => $path,
+    'options' => $options,
+  );
+
+  // Merge in default options.
+  $variables['options'] += array(
+    'attributes' => array(),
+    'query' => array(),
+    'html' => FALSE,
+    'language' => NULL,
+    'set_active_class' => FALSE,
+  );
+
+  // Add a hreflang attribute if we know the language of this link's url and
+  // hreflang has not already been set.
+  if (!empty($variables['options']['language']) && !isset($variables['options']['attributes']['hreflang'])) {
+    $variables['options']['attributes']['hreflang'] = $variables['options']['language']->id;
+  }
+
+  // Set the "active" class if the 'set_active_class' option is not empty.
+  if (!empty($variables['options']['set_active_class'])) {
+    // Add a "data-drupal-link-query" attribute to let the drupal.active-link
+    // library know the query in a standardized manner.
+    if (!empty($variables['options']['query'])) {
+      $query = $variables['options']['query'];
+      ksort($query);
+      $variables['options']['attributes']['data-drupal-link-query'] = Json::encode($query);
+    }
+
+    // Add a "data-drupal-link-system-path" attribute to let the
+    // drupal.active-link library know the path in a standardized manner.
+    if (!isset($variables['options']['attributes']['data-drupal-link-system-path'])) {
+      $variables['options']['attributes']['data-drupal-link-system-path'] = \Drupal::service('path.alias_manager.cached')->getSystemPath($path);
+    }
+  }
+
+  // Remove all HTML and PHP tags from a tooltip, calling expensive strip_tags()
+  // only when a quick strpos() gives suspicion tags are present.
+  if (isset($variables['options']['attributes']['title']) && strpos($variables['options']['attributes']['title'], '<') !== FALSE) {
+    $variables['options']['attributes']['title'] = strip_tags($variables['options']['attributes']['title']);
+  }
+
+  // Allow other modules to modify the structure of the link.
+  \Drupal::moduleHandler()->alter('link', $variables);
+
+  // Move attributes out of options. url() doesn't need them.
+  $attributes = new Attribute($variables['options']['attributes']);
+  unset($variables['options']['attributes']);
+
+  // The result of url() is a plain-text URL. Because we are using it here
+  // in an HTML argument context, we need to encode it properly.
+  $url = String::checkPlain(url($variables['path'], $variables['options']));
+
+  // Sanitize the link text if necessary.
+  $text = $variables['options']['html'] ? $variables['text'] : String::checkPlain($variables['text']);
+
+  return '<a href="' . $url . '"' . $attributes . '><span>' . $text . '</span></a>';
+}

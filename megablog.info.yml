@@ -1,0 +1,41 @@
+name: 'Mega Blog'
+type: theme
+description: 'My custom theme'
+version: 8.0-dev
+core: 8.x
+
+# Style sheets.
+stylesheets:
+  all:
+    - styles/common-css/reset_9bc22cbd.css
+    - styles/style2/css/text_9bc22cbd.css
+    - styles/common-css/960_9bc22cbd.css
+    - scripts/superfish-1.4.8/css/superfish_9bc22cbd.css
+    - styles/common-css/pagenavi-css_9bc22cbd.css
+    - styles/style2/css/style_9bc22cbd.css
+    - scripts/prettyphoto/css/prettyphoto_9bc22cbd.css
+scripts:
+    - scripts/jquery-1.3.2.min_4d79410a.js
+    - scripts/cycle/jquery.cycle.all.js
+    - scripts/cycle/jquery.easing.1.1.1.js
+    - scripts/cufon/cufon-yui_48952cbd.js
+    - scripts/cufon/eurofurence_500-eurofurence_700.font_9bc22cbd.js
+    - scripts/prettyphoto/js/jquery.prettyphoto_ad9fc9ca.js
+    - scripts/jquery-validate/jquery.validate.min_56734387.js
+    - scripts/masked-input-plugin/jquery.maskedinput.min_dae510ae.js
+    - scripts/superfish-1.4.8/js/hoverintent_9596277a.js
+    - scripts/superfish-1.4.8/js/superfish_af85516.js
+    - scripts/superfish-1.4.8/js/supersubs_dae51111.js
+    - scripts/script_9bc22cbd.js
+
+regions:
+  page_top:       'Page top'
+  header:         'Header'
+  navigation:     'Navigation Menu'
+  search_box:     'Search Box'
+  highlighted:    'Highlight'
+  help:           'Help'
+  content:        'Content'
+  sidebar_second: 'Right sidebar'
+  footer:         'Footer'
+  page_bottom:    'Page bottom'
